@@ -1,8 +1,8 @@
 import { createBrowserRouter} from "react-router-dom";
 import BuyerHome from "../pages/BuyerHome";
-// import AdminHome from "../pages/AdminHome";
+import AdminHome from "../pages/AdminHome";
 // import BuyerBooking from "../pages/BuyerBooking";
-import CreateBooking from "../pages/CreateBooking";
+import CreateEvent from "../pages/CreateEvent";
 import Login from "../pages/Login";
 import PrivateRoutes from "./privateRoute";
 
@@ -15,14 +15,22 @@ const router = createBrowserRouter([
     path: "/buyerDash",
     element: <BuyerHome />
   },
-//   {
-//     path: "/admin",
-//     element: (
-//       <PrivateRoutes>
-//         <AdminHome />
-//       </PrivateRoutes>
-//     )
-//   }
+  {
+    path: "/admin/dashboard",
+    element: (
+      <PrivateRoutes>
+        <AdminHome />
+      </PrivateRoutes>
+    )
+  },
+  {
+    path: "/admin/create",
+    element: (
+      <PrivateRoutes>
+        <CreateEvent />
+      </PrivateRoutes>
+    )
+  }
 ]);
 
 export default router;

@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+/* eslint-disable no-unused-vars */
+import { useState} from 'react';
+import API from '../utils/axios';
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { jwtDecode } from 'jwt-decode'
 
 const LoginForm = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,17 +22,33 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('YOUR_API_ENDPOINT', {
+      const response = await API.post('/auth/login', {
         email,
         password,
       });
-      const token = response.data.token;
-      localStorage.setItem('token', token);
-      // Redirect or do something else after successful login
+      if (response.status === 200) {
+        const token = response.data.token;
+        const decodedToken = jwtDecode(token);
+        const userRole = decodedToken.id.user.role
+        localStorage.setItem('token', token);
+        localStorage.setItem('userRole', userRole)
+        toast.success(response.data.message);  
+        if(userRole === 'Admin'){
+          navigate('/admin/dashboard');
+        }else{
+          navigate('/buyerDash')
+        }
+      } else {
+        toast.error(response.data.message);
+      }
     } catch (error) {
-      setError('Invalid email or password');
+      if (error.response && error.response.data.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("An error occurred while logging in");
+      }
     }
-  };
+  };  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

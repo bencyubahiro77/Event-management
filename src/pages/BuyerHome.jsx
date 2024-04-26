@@ -1,78 +1,77 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
+import { useState, useEffect } from 'react';
+import API from '../utils/axios';
+import { formatDate } from '../utils/formatDate';
 import NavBar from '../navbar/nav';
 
-const eventsData = [
-  {
-    id: 1,
-    title: 'Tech Conference 2024',
-    date: 'April 30, 2024',
-    location: 'San Francisco, CA',
-    ticketsAvailable: 150,
-  },
-  {
-    id: 2,
-    title: 'Startup Summit',
-    date: 'May 15, 2024',
-    location: 'New York City, NY',
-    ticketsAvailable: 100,
-  },
-  {
-    id: 3,
-    title: 'Digital Marketing Expo',
-    date: 'June 5, 2024',
-    location: 'Los Angeles, CA',
-    ticketsAvailable: 200,
-  },
-  {
-    id: 3,
-    title: 'Digital Marketing Expo',
-    date: 'June 5, 2024',
-    location: 'Los Angeles, CA',
-    ticketsAvailable: 200,
-  },
-  {
-    id: 3,
-    title: 'Digital Marketing Expo',
-    date: 'June 5, 2024',
-    location: 'Los Angeles, CA',
-    ticketsAvailable: 200,
-  },
-  {
-    id: 3,
-    title: 'Digital Marketing Expo',
-    date: 'June 5, 2024',
-    location: 'Los Angeles, CA',
-    ticketsAvailable: 200,
-  },
-];
 
-const EventCard = ({ event }) => {
+
+const AdminHome = () => {
+  const [eventsData, setEventsData] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await API.get('/services');
+        if (response.status === 200) {
+          const formattedEvents = response.data.data.map(event => ({
+            ...event,
+            date: formatDate(event.date) 
+          }));
+          setEventsData(formattedEvents);
+        }
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const handleBookEvent = (event) => {
+    console.log('Editing event:', event.id);
+  };
+
+  const handleCancelEvent = (eventId) => {
+    console.log('Deleting event:', eventId);
+  };
+
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md mx-2 mb-4 w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
-      <div className="p-4 ">
-        <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
-        <p className="text-gray-600 mb-2">{event.date}</p>
-        <p className="text-gray-600 mb-2">{event.location}</p>
-        <p className="text-gray-600">{event.ticketsAvailable} tickets available</p>
+    <div>
+      <NavBar />
+      <div className="container mx-auto py-8 px-4">
+        <h2 className="text-2xl font-semibold mb-2">Upcoming Events</h2>
+        <table className="w-full text-sm text-left text-gray-500">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+            <tr>
+              <th className="px-6 py-3">Title</th>
+              <th className="px-6 py-3">Date</th>
+              <th className="px-6 py-3">Location</th>
+              <th className="px-6 py-3">Tickets Available</th>
+              <th className="px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {eventsData.map((event, index) => (
+              <tr key={`event-${index}`}>
+                <td className="px-6 py-4">{event.title}</td>
+                <td className="px-6 py-4">{event.date}</td>
+                <td className="px-6 py-4">{event.location}</td>
+                <td className="px-6 py-4">{event.ticketAvailability}</td>
+                <td className="px-6 py-4">
+                  <div className='flex gap-2'>
+                  <h3 className="text-white cursor-pointer border border-green-800 px-2 py-2 rounded-lg bg-green-800" onClick={() => handleBookEvent(event.id)}>Book</h3>
+                  <h3 className="text-white cursor-pointer border border-red-800 px-2 py-2 rounded-lg bg-red-800" onClick={() => handleCancelEvent(event.id)}>Cancel</h3>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+  
+        </table>
       </div>
     </div>
   );
 };
 
-const EventList = () => {
-  return (
-    <div>
-        <NavBar />
-        <div className="container mx-auto py-8 px-4">
-        <h2 className="text-2xl font-semibold mb-4">Upcoming Events</h2>
-        <div className="flex flex-wrap -mx-2">
-            {eventsData.map((event) => (
-            <EventCard key={event.id} event={event} />
-            ))}
-        </div>
-        </div>
-    </div>
-  );
-};
-
-export default EventList;
+export default AdminHome;

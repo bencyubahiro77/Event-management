@@ -3,16 +3,21 @@ import { useState, useEffect } from 'react';
 import API from '../utils/axios';
 import { formatDate } from '../utils/formatDate';
 import NavBar from '../navbar/nav';
+import Swal from 'sweetalert2';
+import { toast } from "react-toastify";
 
 
-
-const AdminHome = () => {
+const BuyerHome = () => {
   const [eventsData, setEventsData] = useState([]);
 
-  useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await API.get('/services');
+        const token = localStorage.getItem('token');
+        const response = await API.get('/services', {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+        });
         if (response.status === 200) {
           const formattedEvents = response.data.data.map(event => ({
             ...event,
@@ -25,15 +30,34 @@ const AdminHome = () => {
       }
     };
 
-    fetchEvents();
-  }, []);
+    useEffect(()=>{
+      fetchEvents();
+    },[])
 
-  const handleBookEvent = (event) => {
-    console.log('Editing event:', event.id);
-  };
-
-  const handleCancelEvent = (eventId) => {
-    console.log('Deleting event:', eventId);
+  const handleBookEvent = async (serviceId) => {
+    const { value: numberOfTicket } = await Swal.fire({
+      title: 'Enter number of tickets',
+      input: 'text',
+      inputLabel: 'Number of Tickets',
+      inputPlaceholder: 'Enter the number of tickets',
+      showCancelButton: true,
+    });
+  
+    if (numberOfTicket) {
+      const userId = localStorage.getItem('userId');
+      const response = await API.post('/services/bookservice', {
+        userId,
+        serviceId,
+        numberOfTicket
+      });
+  
+      if (response.status === 200) {
+        toast.success('The event has been booked successfully');
+        fetchEvents();
+      } else {
+        toast.error('There was an error booking the event');
+      }
+    }
   };
 
   return (
@@ -61,7 +85,6 @@ const AdminHome = () => {
                 <td className="px-6 py-4">
                   <div className='flex gap-2'>
                   <h3 className="text-white cursor-pointer border border-green-800 px-2 py-2 rounded-lg bg-green-800" onClick={() => handleBookEvent(event.id)}>Book</h3>
-                  <h3 className="text-white cursor-pointer border border-red-800 px-2 py-2 rounded-lg bg-red-800" onClick={() => handleCancelEvent(event.id)}>Cancel</h3>
                   </div>
                 </td>
               </tr>
@@ -74,4 +97,4 @@ const AdminHome = () => {
   );
 };
 
-export default AdminHome;
+export default BuyerHome;

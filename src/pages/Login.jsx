@@ -30,17 +30,17 @@ const LoginForm = () => {
         const token = response.data.token;
         const decodedToken = jwtDecode(token);
         const userRole = decodedToken.id.user.role
+        const userId = decodedToken.id.user.id 
         localStorage.setItem('token', token);
         localStorage.setItem('userRole', userRole)
+        localStorage.setItem('userId', userId)
         toast.success(response.data.message);  
         if(userRole === 'Admin'){
           navigate('/admin/dashboard');
         }else{
           navigate('/buyerDash')
         }
-      } else {
-        toast.error(response.data.message);
-      }
+      } 
     } catch (error) {
       if (error.response && error.response.data.message) {
         toast.error(error.response.data.message);

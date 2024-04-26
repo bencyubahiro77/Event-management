@@ -41,7 +41,7 @@ const NavBar = () => {
         >
           <li className="y-6 xl:my-0 ml-2 mr-4 my-6">
             <Link
-              to="/admin/dashboard"
+              to="/buyerDash"
               className={`my-6 xl:my-0 no-underline text-white ml-2 mr-4 ${
                 location.pathname === "/buyerDash" ? "border-b-2 pb-2" : ""
               }`}
@@ -52,9 +52,9 @@ const NavBar = () => {
           </li>
           <li className="y-6 xl:my-0 ml-4 my-8 ">
             <Link
-              to="/admin/student"
+              to="/myBooking"
               className={`my-6 xl:my-0 no-underline text-white mr-4 ${
-                location.pathname === "/admin/student" ? "border-b-2 pb-2" : ""
+                location.pathname === "/myBooking" ? "border-b-2 pb-2" : ""
               }`}
               onClick={() => setIsMenuOpen(false)}
             >

@@ -9,6 +9,7 @@ const PrivateRoutes = ({ children, restrictedTo }) => {
     const userRole = localStorage.getItem("userRole");
 
     if (!token || (restrictedTo && userRole !== restrictedTo)) {
+      localStorage.clear()
       navigate("/");
     }
   }, []);

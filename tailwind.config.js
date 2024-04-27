@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Nunito Sans',],
+        sans: ['Roboto', 'sans-serif'],
       },
     },
   },

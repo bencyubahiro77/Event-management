@@ -5,6 +5,7 @@ import BuyerBooking from "../pages/BuyerBooking";
 import CreateEvent from "../pages/CreateEvent";
 import Login from "../pages/Login";
 import PrivateRoutes from "./privateRoute";
+import AdminAllBooking from "../pages/AdminAllBooking";
 
 const router = createBrowserRouter([
   {
@@ -40,6 +41,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoutes restrictedTo="Admin">
         <CreateEvent />
+      </PrivateRoutes>
+    )
+  },
+  {
+    path: "/allBooking",
+    element: (
+      <PrivateRoutes restrictedTo="Admin">
+        <AdminAllBooking />
       </PrivateRoutes>
     )
   }

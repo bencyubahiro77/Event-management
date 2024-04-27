@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt} from '@fortawesome/free-solid-svg-icons';
 import API from '../utils/axios';
@@ -7,12 +7,12 @@ import { toast } from "react-toastify";
 import Swal from 'sweetalert2'
 import { formatDate } from '../utils/formatDate';
 import { Link } from 'react-router-dom';
-import LogoutButton from '../utils/Logout';
+import NavBar from '../navbar/nav';
 
 const AdminHome = () => {
   const [eventsData, setEventsData] = useState([]);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useMemo(() => async () => {
     try {
       const response = await API.get('/services');
       if (response.status === 200) {
@@ -25,11 +25,11 @@ const AdminHome = () => {
     } catch (error) {
       toast.error('Failed to fetch events');
     }
-  };
+  }, []); 
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
   const handleEdit = async (event) => {
     const { value: formValues } = await Swal.fire({
@@ -95,16 +95,16 @@ const AdminHome = () => {
   
   return (
     <div>
+      <NavBar />
       <div className="container mx-auto py-8 px-4">
         <div className='flex justify-between'>
          <h2 className="text-2xl font-semibold mb-2">Upcoming Events</h2>
          <div className='flex gap-2 mb-2'>
-          <Link to="/admin/create" >
+          <Link to="/admin/create" style={{ textDecoration: 'none' }}>
           <h3 className="text-white cursor-pointer border border-green-800 px-2 py-2 rounded-lg bg-green-800">
             Create Event
           </h3>
           </Link>
-          <LogoutButton />
          </div>
         </div>
         <table className="w-full text-sm text-left text-gray-500">

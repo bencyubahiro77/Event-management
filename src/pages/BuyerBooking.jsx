@@ -1,14 +1,14 @@
-/* eslint-disable react/prop-types */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import API from '../utils/axios';
 import { formatDate } from '../utils/formatDate';
 import NavBar from '../navbar/nav';
+import { toast } from "react-toastify";
 
 
 const BuyerBooking = () => {
   const [eventsData, setEventsData] = useState([]);
 
-  const fetchUserEvents = async () => {
+  const fetchUserEvents =  useMemo(() => async () => {
     try {
       const userId = localStorage.getItem('userId');
       const token = localStorage.getItem('token');
@@ -27,21 +27,37 @@ const BuyerBooking = () => {
     } catch (error) {
       console.error('Failed to fetch events:', error);
     }
-  };  
+  }, []); 
   
   useEffect(() => {
     fetchUserEvents();
-  }, []);
+  }, [fetchUserEvents]);
 
-  const cancelBookEvent = (event) => {
-    console.log('Editing event:', event.id);
-  };
+  const cancelBookEvent = async (id) => {
+    try {
+      const userId = parseInt(localStorage.getItem('userId'), 10);
+      const token = localStorage.getItem('token');
+      const response = await API.delete('/services/cancelservice', {
+        data: { userId, id },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.status === 200) {
+        toast.success('Booking canceled successfully');
+        fetchUserEvents();
+      }
+    } catch (error) {
+      toast.error('Failed to cancel booking');
+    }
+  };    
 
   return (
     <div>
       <NavBar />
       <div className="container mx-auto py-8 px-4">
         <h2 className="text-2xl font-semibold mb-2">My Events</h2>
+        {eventsData.length > 0 ? (
         <table className="w-full text-sm text-left text-gray-500">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
@@ -67,8 +83,12 @@ const BuyerBooking = () => {
               </tr>
             ))}
           </tbody>
-  
         </table>
+        ) : (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-gray-500">No booking</p>
+          </div>
+        )}
       </div>
     </div>
   );

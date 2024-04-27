@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import API from '../utils/axios';
 import { toast } from "react-toastify";
-import { useNavigate } from 'react-router-dom';
+import NavBar from '../navbar/nav';
 
 const CreateEvent = () => {
     const [categories, setCategories] = useState([]);
@@ -12,11 +12,6 @@ const CreateEvent = () => {
         location: '',
         ticketAvailability: ''
     });
-    const navigate = useNavigate();  // For React Router v6
-
-    useEffect(() => {
-        fetchCategories();
-    }, []);
 
     const fetchCategories = async () => {
         try {
@@ -28,6 +23,10 @@ const CreateEvent = () => {
           toast.error('Error fetching categories:', error);
         }
     };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -54,16 +53,9 @@ const CreateEvent = () => {
     
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
-            <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="m-4 text-blue-500 hover:text-blue-700 font-semibold"
-            >
-                Back
-            </button>
+            <NavBar />
             <div className="flex flex-1 items-center justify-center">
-                <form onSubmit={handleSubmit} className="p-8 bg-white rounded-lg shadow-lg space-y-4 max-w-md w-full">
-                    {/* Form fields and submission button */}
+                <form onSubmit={handleSubmit} className="p-8 space-y-4 max-w-md w-full">
                     <div>
                         <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">Category:</label>
                         <select

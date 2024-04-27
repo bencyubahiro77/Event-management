@@ -3,10 +3,12 @@ import API from '../utils/axios';
 import { formatDate } from '../utils/formatDate';
 import NavBar from '../navbar/nav';
 import { toast } from "react-toastify";
-
+import Loader from '../utils/Loader';
 
 const AdminAllBooking = () => {
   const [eventsData, setEventsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [cancelLoading, setCancelLoading] = useState({});
 
   const fetchUserEvents = useMemo(() => async () => {
     try {
@@ -18,21 +20,24 @@ const AdminAllBooking = () => {
       });
       if (response.status === 200) {
         const formattedEvents = response.data.data.map(event => ({
-            ...event,
-            date: formatDate(event.Service.date)
+          ...event,
+          date: formatDate(event.Service.date)
         }));
         setEventsData(formattedEvents);
       }
     } catch (error) {
       toast.error('Failed to fetch booking');
+    } finally {
+      setLoading(false);
     }
-  }, []); 
-  
+  }, []);
+
   useEffect(() => {
     fetchUserEvents();
   }, [fetchUserEvents]);
 
   const cancelBookEvent = async (id) => {
+    setCancelLoading(prevState => ({ ...prevState, [id]: true }));
     try {
       const userId = parseInt(localStorage.getItem('userId'), 10);
       const token = localStorage.getItem('token');
@@ -49,6 +54,8 @@ const AdminAllBooking = () => {
       }
     } catch (error) {
       toast.error('Failed to cancel booking');
+    }finally {
+      setCancelLoading(prevState => ({ ...prevState, [id]: false }));
     }
   };
 
@@ -57,7 +64,9 @@ const AdminAllBooking = () => {
       <NavBar />
       <div className="container mx-auto py-8 px-4">
         <h2 className="text-2xl font-semibold mb-2">All Bookings</h2>
-        {eventsData.length > 0 ? (
+        {loading ? (
+          <Loader />
+        ) : eventsData.length > 0 ? (
           <table className="w-full text-sm text-left text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
               <tr>
@@ -79,7 +88,13 @@ const AdminAllBooking = () => {
                   <td className="px-6 py-4">{event.numberOfTicket}</td>
                   <td className="px-6 py-4">
                     <div className='flex gap-2'>
-                      <h3 className="text-white cursor-pointer border border-red-800 px-2 py-2 rounded-lg bg-red-800" onClick={() => cancelBookEvent(event.id)}>Cancel</h3>
+                      <button className="text-white cursor-pointer border border-red-800 px-2 py-2 rounded-lg bg-red-800 w-20" onClick={() => cancelBookEvent(event.id)}>
+                        {cancelLoading[event.id] ? (
+                          <Loader />
+                        ) : (
+                          'Cancel'
+                        )}
+                      </button>
                     </div>
                   </td>
                 </tr>

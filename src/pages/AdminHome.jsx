@@ -1,16 +1,18 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect,useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrashAlt} from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import API from '../utils/axios';
 import { toast } from "react-toastify";
 import Swal from 'sweetalert2'
 import { formatDate } from '../utils/formatDate';
 import { Link } from 'react-router-dom';
 import NavBar from '../navbar/nav';
+import Loader from '../utils/Loader';
 
 const AdminHome = () => {
   const [eventsData, setEventsData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchEvents = useMemo(() => async () => {
     try {
@@ -24,8 +26,10 @@ const AdminHome = () => {
       }
     } catch (error) {
       toast.error('Failed to fetch events');
+    } finally {
+      setLoading(false);
     }
-  }, []); 
+  }, []);
 
   useEffect(() => {
     fetchEvents();
@@ -36,11 +40,11 @@ const AdminHome = () => {
       title: 'Edit Event',
       showCancelButton: true,
       html:
-      '<input id="swal-input1" type="text" class="swal2-input" style="width: 70%;" value="' + event.title + '">' +
-      '<input id="swal-input2" class="swal2-input" type="date" style="width: 70%;" value="' + event.date + '">' +
-      '<input id="swal-input3" class="swal2-input" type="text" style="width: 70%;" value="' + event.location + '">' +
-      '<input id="swal-input4" class="swal2-input" type="text" style="width: 70%;" value="' + event.ticketAvailability + '">',
-    
+        '<input id="swal-input1" type="text" class="swal2-input" style="width: 70%; height:40px" value="' + event.title + '">' +
+        '<input id="swal-input2" class="swal2-input" type="date" style="width: 70%; height:40px" value="' + event.date + '">' +
+        '<input id="swal-input3" class="swal2-input" type="text" style="width: 70%; height:40px" value="' + event.location + '">' +
+        '<input id="swal-input4" class="swal2-input" type="text" style="width: 70%; height:40px" value="' + event.ticketAvailability + '">',
+
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -77,11 +81,11 @@ const AdminHome = () => {
   const handleDelete = async (eventId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await API.delete(`/services/${eventId}`,{
+      const response = await API.delete(`/services/${eventId}`, {
         headers: {
-            Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         }
-    });
+      });
       if (response.status === 200) {
         toast.success("deleted successfully")
         fetchEvents();
@@ -92,47 +96,54 @@ const AdminHome = () => {
       toast.error('Failed to delete event:', eventId, error);
     }
   };
-  
+
   return (
     <div>
       <NavBar />
       <div className="container mx-auto py-8 px-4">
         <div className='flex justify-between'>
-         <h2 className="text-2xl font-semibold mb-2">Upcoming Events</h2>
-         <div className='flex gap-2 mb-2'>
-          <Link to="/admin/create" style={{ textDecoration: 'none' }}>
-          <h3 className="text-white cursor-pointer border border-green-800 px-2 py-2 rounded-lg bg-green-800">
-            Create Event
-          </h3>
-          </Link>
-         </div>
+          <h2 className="text-2xl font-semibold mb-2">Upcoming Events</h2>
+          <div className='flex gap-2 mb-2'>
+            <Link to="/admin/create" style={{ textDecoration: 'none' }}>
+              <h3 className="text-white cursor-pointer border border-green-800 px-2 py-2 rounded-lg bg-green-800">
+                Create Event
+              </h3>
+            </Link>
+          </div>
         </div>
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-              <th className="px-6 py-3">Title</th>
-              <th className="px-6 py-3">Date</th>
-              <th className="px-6 py-3">Location</th>
-              <th className="px-6 py-3">Tickets Available</th>
-              <th className="px-6 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {eventsData.map((event, index) => (
-              <tr key={`event-${index}`}>
-                <td className="px-6 py-4">{event.title}</td>
-                <td className="px-6 py-4">{event.date}</td>
-                <td className="px-6 py-4">{event.location}</td>
-                <td className="px-6 py-4">{event.ticketAvailability}</td>
-                <td className="px-6 py-4">
-                  <FontAwesomeIcon icon={faEdit} className="mx-2 cursor-pointer" onClick={() => handleEdit(event)} />
-                  <FontAwesomeIcon icon={faTrashAlt} className="cursor-pointer" onClick={() => handleDelete(event.id)} />
-                </td>
+        {loading ? (
+          <Loader />
+        ) : eventsData.length > 0 ? (
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th className="px-6 py-3">Title</th>
+                <th className="px-6 py-3">Date</th>
+                <th className="px-6 py-3">Location</th>
+                <th className="px-6 py-3">Tickets Available</th>
+                <th className="px-6 py-3">Actions</th>
               </tr>
-            ))}
-          </tbody>
-  
-        </table>
+            </thead>
+            <tbody>
+              {eventsData.map((event, index) => (
+                <tr key={`event-${index}`}>
+                  <td className="px-6 py-4">{event.title}</td>
+                  <td className="px-6 py-4">{event.date}</td>
+                  <td className="px-6 py-4">{event.location}</td>
+                  <td className="px-6 py-4">{event.ticketAvailability}</td>
+                  <td className="px-6 py-4">
+                    <FontAwesomeIcon icon={faEdit} className="mx-2 cursor-pointer" onClick={() => handleEdit(event)} />
+                    <FontAwesomeIcon icon={faTrashAlt} className="cursor-pointer" onClick={() => handleDelete(event.id)} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-gray-500">No Events</p>
+          </div>
+        )}
       </div>
     </div>
   );

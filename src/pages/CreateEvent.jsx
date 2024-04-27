@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import API from '../utils/axios';
 import { toast } from "react-toastify";
 import NavBar from '../navbar/nav';
+import Loader from '../utils/Loader';
 
 const CreateEvent = () => {
     const [categories, setCategories] = useState([]);
@@ -12,6 +13,7 @@ const CreateEvent = () => {
         location: '',
         ticketAvailability: ''
     });
+    const [loading, setLoading] = useState(false); 
 
     const fetchCategories = async () => {
         try {
@@ -38,6 +40,7 @@ const CreateEvent = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true); 
         const token = localStorage.getItem('token'); 
         try {
             await API.post('/services', formData, {
@@ -46,8 +49,17 @@ const CreateEvent = () => {
                 }
             });
             toast.success('Event created successfully!');
+            setFormData({
+                categoryId: '',
+                title: '',
+                date: '',
+                location: '',
+                ticketAvailability: ''
+            });    
+            setLoading(false); 
         } catch (error) {
             toast.error('Failed to create event');
+            setLoading(false); 
         }
     };
     
@@ -117,8 +129,8 @@ const CreateEvent = () => {
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
                         />
                     </div>
-                    <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Create Event
+                    <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"  disabled={loading} >
+                        {loading ? <Loader /> : ' Create Event'} 
                     </button>
                 </form>
             </div>

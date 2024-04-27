@@ -3,13 +3,15 @@ import { useState} from 'react';
 import API from '../utils/axios';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { jwtDecode } from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode';
+import Loader from '../utils/Loader';
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); 
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -21,11 +23,13 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); 
     try {
       const response = await API.post('/auth/login', {
         email,
         password,
       });
+      setLoading(false); 
       if (response.status === 200) {
         const token = response.data.token;
         const decodedToken = jwtDecode(token);
@@ -42,6 +46,7 @@ const LoginForm = () => {
         }
       } 
     } catch (error) {
+      setLoading(false); // Stop loading
       if (error.response && error.response.data.message) {
         toast.error(error.response.data.message);
       } else {
@@ -81,8 +86,9 @@ const LoginForm = () => {
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-200"
+            disabled={loading} 
           >
-            Login
+            {loading ? <Loader /> : 'Login'} 
           </button>
         </form>
       </div>

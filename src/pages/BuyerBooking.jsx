@@ -3,12 +3,15 @@ import API from '../utils/axios';
 import { formatDate } from '../utils/formatDate';
 import NavBar from '../navbar/nav';
 import { toast } from "react-toastify";
+import Loader from '../utils/Loader';
 
 
 const BuyerBooking = () => {
   const [eventsData, setEventsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [cancelLoading, setCancelLoading] = useState({});
 
-  const fetchUserEvents =  useMemo(() => async () => {
+  const fetchUserEvents = useMemo(() => async () => {
     try {
       const userId = localStorage.getItem('userId');
       const token = localStorage.getItem('token');
@@ -25,15 +28,18 @@ const BuyerBooking = () => {
         setEventsData(formattedEvents);
       }
     } catch (error) {
-      console.error('Failed to fetch events:', error);
+      toast.error('Failed to fetch events:', error);
+    } finally {
+      setLoading(false);
     }
-  }, []); 
-  
+  }, []);
+
   useEffect(() => {
     fetchUserEvents();
   }, [fetchUserEvents]);
 
   const cancelBookEvent = async (id) => {
+    setCancelLoading(prevState => ({ ...prevState, [id]: true }));
     try {
       const userId = parseInt(localStorage.getItem('userId'), 10);
       const token = localStorage.getItem('token');
@@ -44,46 +50,56 @@ const BuyerBooking = () => {
         }
       });
       if (response.status === 200) {
-        toast.success('Booking canceled successfully');
         fetchUserEvents();
+        toast.success('Booking canceled successfully');
       }
     } catch (error) {
       toast.error('Failed to cancel booking');
+    } finally {
+      setCancelLoading(prevState => ({ ...prevState, [id]: false }));
     }
-  };    
+  };
 
   return (
     <div>
       <NavBar />
       <div className="container mx-auto py-8 px-4">
         <h2 className="text-2xl font-semibold mb-2">My Events</h2>
-        {eventsData.length > 0 ? (
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-              <th className="px-6 py-3">Title</th>
-              <th className="px-6 py-3">Date</th>
-              <th className="px-6 py-3">Location</th>
-              <th className="px-6 py-3">Number of Ticket</th>
-              <th className="px-6 py-3">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {eventsData.map((event, index) => (
-              <tr key={`event-${index}`}>
-                <td className="px-6 py-4">{event.Service.title}</td>
-                <td className="px-6 py-4">{event.date}</td>
-                <td className="px-6 py-4">{event.Service.location}</td>
-                <td className="px-6 py-4">{event.numberOfTicket}</td>
-                <td className="px-6 py-4">
-                  <div className='flex gap-2'>
-                  <h3 className="text-white cursor-pointer border border-red-800 px-2 py-2 rounded-lg bg-red-800" onClick={() => cancelBookEvent(event.id)}>Cancel</h3>
-                  </div>
-                </td>
+        {loading ? (
+          <Loader />
+        ) : eventsData.length > 0 ? (
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th className="px-6 py-3">Title</th>
+                <th className="px-6 py-3">Date</th>
+                <th className="px-6 py-3">Location</th>
+                <th className="px-6 py-3">Number of Ticket</th>
+                <th className="px-6 py-3">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {eventsData.map((event, index) => (
+                <tr key={`event-${index}`}>
+                  <td className="px-6 py-4">{event.Service.title}</td>
+                  <td className="px-6 py-4">{event.date}</td>
+                  <td className="px-6 py-4">{event.Service.location}</td>
+                  <td className="px-6 py-4">{event.numberOfTicket}</td>
+                  <td className="px-6 py-4">
+                    <div className='flex gap-2'>
+                      <button className="text-white cursor-pointer border border-red-800 px-2 py-2 rounded-lg bg-red-800 w-20" onClick={() => cancelBookEvent(event.id)}>
+                        {cancelLoading[event.id] ? (
+                          <Loader /> 
+                        ) : (
+                          'Cancel' 
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         ) : (
           <div className="flex justify-center items-center h-64">
             <p className="text-xl text-gray-500">No booking</p>
